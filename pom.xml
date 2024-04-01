@@ -7,11 +7,20 @@
     <groupId>org.example</groupId>
     <artifactId>Project4</artifactId>
     <version>1.0-SNAPSHOT</version>
+    
+    <!-- Set packaging to WAR -->
+    <packaging>war</packaging>
+
     <dependencies>
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.json</artifactId>
             <version>1.1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20220320</version>
         </dependency>
 
         <dependency>
@@ -29,9 +38,14 @@
     </dependencies>
 
     <properties>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <!-- Configure the WAR file name -->
+    <build>
+        <finalName>ROOT</finalName>
+    </build>
 
 </project>

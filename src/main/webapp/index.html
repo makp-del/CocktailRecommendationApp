@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cocktail Search</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .form-container { margin-bottom: 20px; }
+        label, input, button { display: block; margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <h2>Cocktail Search Service</h2>
+
+    <!-- Cocktail Name Search -->
+    <div class="form-container">
+        <form action="searchCocktail" method="get">
+            <label for="searchTerm">Cocktail Name:</label>
+            <input type="text" id="searchTerm" name="searchTerm">
+            <button type="submit">Search</button>
+        </form>
+    </div>
+
+    <!-- Ingredient Search -->
+    <div class="form-container">
+        <form action="findByIngredients" method="get">
+            <label for="ingredients">Ingredients (comma separated):</label>
+            <input type="text" id="ingredients" name="ingredients" placeholder="e.g., gin, tonic, lime">
+            <button type="submit">Find Cocktails</button>
+        </form>
+    </div>
+
+    <!-- Drink Details Search -->
+    <div class="form-container">
+        <form action="getDrinkDetails" method="get">
+            <label for="idDrink">Drink ID:</label>
+            <input type="text" id="idDrink" name="idDrink" placeholder="Enter drink ID">
+            <button type="submit">Get Details</button>
+        </form>
+    </div>
+
+</body>
+</html>
