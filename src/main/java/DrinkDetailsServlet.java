@@ -17,18 +17,26 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 
+/**
+ * Servlet implementation class DrinkDetailsServlet
+ * This servlet is responsible for retrieving details of a specific drink.
+ */
 @WebServlet("/getDrinkDetails")
 public class DrinkDetailsServlet extends HttpServlet {
 
+    // MongoDB connection string and database/collection names
     private static final String MONGO_CONNECTION_STRING = "mongodb+srv://manjunathkp1298:2Xg3NY1C5rBlnbHa@dismprojectcluster.6ct1xxu.mongodb.net/?retryWrites=true&w=majority&appName=DISMProjectCluster";
     private static final String DB_NAME = "CocktailDB"; // Use the name of your database
     private static final String COLLECTION_NAME = "ServiceLogs"; // Use the name of your collection
     private static ServiceLogger logger = new ServiceLogger(MONGO_CONNECTION_STRING, DB_NAME, COLLECTION_NAME);
 
+    /**
+     * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         long startTime = System.currentTimeMillis(); // Capture start time
         String status = "success";
         String idDrink = request.getParameter("idDrink");
@@ -43,8 +51,6 @@ public class DrinkDetailsServlet extends HttpServlet {
         if (drinkDetails != null) {
             response.setContentType("application/json");
             PrintWriter out = response.getWriter();
-            status = "error: Search term is required";
-            logger.log(this.getClass().getSimpleName(), request.getHeader("User-Agent"), "/getDrinkDetails", "searchTerm=none", System.currentTimeMillis() - startTime, status);
             out.print(drinkDetails.toString());
             out.flush();
         } else {
@@ -52,8 +58,18 @@ public class DrinkDetailsServlet extends HttpServlet {
         }
 
         incrementUserDrinkRequestCount(sessionToken, idDrink);
+
+        // Log the request details
+        logger.log(this.getClass().getSimpleName(), request.getHeader("User-Agent"), "/getDrinkDetails", "idDrink=" + idDrink, System.currentTimeMillis() - startTime, status);
     }
 
+    /**
+     * Retrieves drink details from a third-party API.
+     *
+     * @param idDrink The ID of the drink to retrieve details for.
+     * @return JSONObject containing drink details if found, null otherwise.
+     * @throws IOException
+     */
     private JSONObject getDrinkDetails(String idDrink) throws IOException {
         String apiURL = "https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i=" + idDrink;
         URL url = new URL(apiURL);
@@ -96,15 +112,21 @@ public class DrinkDetailsServlet extends HttpServlet {
         return detailedDrink;
     }
 
+    /**
+     * Increments the count of drink requests for a specific user.
+     *
+     * @param sessionToken The session token of the user.
+     * @param idDrink      The ID of the requested drink.
+     */
     private void incrementUserDrinkRequestCount(String sessionToken, String idDrink) {
         // Strip "Bearer " prefix from the sessionToken to store only the token part
         String token = sessionToken.replace("Bearer ", "");
-    
+
         // Connect to your MongoDB database
         MongoClient mongoClient = MongoClients.create(MONGO_CONNECTION_STRING);
         MongoDatabase database = mongoClient.getDatabase(DB_NAME);
         MongoCollection<Document> collection = database.getCollection("UserDrinkRequests");
-        
+
         // Find the document for this token and drink ID
         Document userDrinkRequest = collection.find(Filters.and(Filters.eq("userID", token), Filters.eq("idDrink", idDrink))).first();
         if (userDrinkRequest != null) {
@@ -118,8 +140,15 @@ public class DrinkDetailsServlet extends HttpServlet {
                     .append("count", 1);
             collection.insertOne(newUserDrinkRequest);
         }
-    } 
+    }
 
+    /**
+     * Sends an error response with the specified error message.
+     *
+     * @param response     HttpServletResponse object.
+     * @param errorMessage Error message to be sent.
+     * @throws IOException
+     */
     private void sendErrorResponse(HttpServletResponse response, String errorMessage) throws IOException {
         response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);

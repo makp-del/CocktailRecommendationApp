@@ -35,6 +35,25 @@
             <artifactId>mongodb-driver-sync</artifactId>
             <version>4.3.4</version>
         </dependency>
+
+        <!-- SLF4J API -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.30</version> <!-- Use the latest version -->
+        </dependency>
+        <!-- Log4j SLF4J Binding -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.30</version> <!-- Use the latest version -->
+        </dependency>
+        <!-- Log4j -->
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version> <!-- Use the latest version -->
+        </dependency>
     </dependencies>
 
     <properties>

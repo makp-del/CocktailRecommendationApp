@@ -21,16 +21,24 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Scanner;
 
+/**
+ * Servlet implementation class GetDrinkOfTheDayServlet
+ * This servlet is responsible for retrieving the drink of the day.
+ */
 @WebServlet("/getDrinkOfTheDay")
 public class GetDrinkOfTheDayServlet extends HttpServlet {
 
-    private MongoCollection<Document> collection;
+    // MongoDB connection string and database/collection names
     private static final String MONGO_CONNECTION_STRING = "mongodb+srv://manjunathkp1298:2Xg3NY1C5rBlnbHa@dismprojectcluster.6ct1xxu.mongodb.net/?retryWrites=true&w=majority&appName=DISMProjectCluster";
     private static final String DB_NAME = "CocktailDB"; // Use the name of your database
     private static final String COLLECTION_NAME = "UserDrinkRequests"; // Use the name of your collection
     private static ServiceLogger logger = new ServiceLogger(MONGO_CONNECTION_STRING, DB_NAME, COLLECTION_NAME);
 
+    /**
+     * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+     */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // Create MongoDB client and connect to the database
         MongoClient mongoClient = MongoClients.create(MONGO_CONNECTION_STRING);
         MongoDatabase database = mongoClient.getDatabase(DB_NAME);
         MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
@@ -53,21 +61,29 @@ public class GetDrinkOfTheDayServlet extends HttpServlet {
         }
     }
 
+    /**
+     * Retrieves drink details from a third-party API based on drink ID.
+     *
+     * @param idDrink The ID of the drink to retrieve details for.
+     * @return JSONObject containing drink details.
+     * @throws IOException
+     */
     private JSONObject getDrinkDetails(String idDrink) throws IOException {
-        // Assuming you fetch drink details from an external API
+        // Construct URL for third-party API with drink ID
         String apiURL = "https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i=" + idDrink;
         HttpURLConnection conn = (HttpURLConnection) new URL(apiURL).openConnection();
         conn.setRequestMethod("GET");
 
         if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+            // If response code indicates success, parse JSON response from API
             Scanner scanner = new Scanner(conn.getInputStream()).useDelimiter("\\A");
             String responseData = scanner.hasNext() ? scanner.next() : "";
             scanner.close();
 
-            // Assume the API returns the drink details directly
+            // Parse JSON response to JSONObject
             return new JSONObject(responseData);
         } else {
-            // Handle non-200 response
+            // If response code indicates failure, handle appropriately
             return new JSONObject().put("error", "Failed to fetch drink details from external API.");
         }
     }

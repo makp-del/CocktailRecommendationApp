@@ -12,15 +12,23 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 
+/**
+ * Servlet implementation class LoginServlet
+ * This servlet handles user login functionality.
+ */
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
 
-    private MongoCollection<Document> collection;
+    // MongoDB connection string and database/collection names
     private static final String MONGO_CONNECTION_STRING = "mongodb+srv://manjunathkp1298:2Xg3NY1C5rBlnbHa@dismprojectcluster.6ct1xxu.mongodb.net/?retryWrites=true&w=majority&appName=DISMProjectCluster";
     private static final String DB_NAME = "CocktailDB"; // Use the name of your database
     private static final String COLLECTION_NAME = "Users"; // Use the name of your collection
     private static ServiceLogger logger = new ServiceLogger(MONGO_CONNECTION_STRING, DB_NAME, COLLECTION_NAME);
+    private MongoCollection<Document> collection;
 
+    /**
+     * Initializes the servlet.
+     */
     public void init() throws ServletException {
         super.init();
         MongoClient mongoClient = MongoClients.create(MONGO_CONNECTION_STRING);
@@ -28,7 +36,9 @@ public class LoginServlet extends HttpServlet {
         this.collection = database.getCollection(COLLECTION_NAME);
     }
     
-
+    /**
+     * Handles HTTP POST requests for user login.
+     */
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
@@ -54,6 +64,7 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
+        // If user is authenticated, retrieve session token and send success response
         String sessionToken = user.getString("sessionToken");
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter().write("Success; SessionToken: " + sessionToken);

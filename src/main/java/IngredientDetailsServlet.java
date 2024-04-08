@@ -13,17 +13,24 @@ import java.net.URLEncoder;
 import java.net.URL;
 import java.util.Scanner;
 
+/**
+ * Servlet implementation class IngredientDetailsServlet
+ * This servlet is responsible for retrieving drinks based on ingredients.
+ */
 @WebServlet("/findByIngredients")
 public class IngredientDetailsServlet extends HttpServlet {
 
+    // MongoDB connection string and database/collection names
     private static final String MONGO_CONNECTION_STRING = "mongodb+srv://manjunathkp1298:2Xg3NY1C5rBlnbHa@dismprojectcluster.6ct1xxu.mongodb.net/?retryWrites=true&w=majority&appName=DISMProjectCluster";
     private static final String DB_NAME = "CocktailDB"; // Use the name of your database
     private static final String COLLECTION_NAME = "ServiceLogs"; // Use the name of your collection
     private static ServiceLogger logger = new ServiceLogger(MONGO_CONNECTION_STRING, DB_NAME, COLLECTION_NAME);
 
+    /**
+     * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+     */
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String status = "success";
         long startTime = System.currentTimeMillis(); // Capture start time
         String ingredients = request.getParameter("ingredients");
@@ -34,6 +41,7 @@ public class IngredientDetailsServlet extends HttpServlet {
             return;
         }
 
+        // Split ingredients string and build search query
         String[] ingredientList = ingredients.split(",");
         StringBuilder sBuilder = new StringBuilder();
         for(String ing: ingredientList){
@@ -42,11 +50,15 @@ public class IngredientDetailsServlet extends HttpServlet {
         sBuilder.deleteCharAt(sBuilder.length() - 1);
         JSONArray allDrinks = new JSONArray();
 
+        // Iterate through each ingredient
         for (String ingredient : ingredientList) {
             ingredient = ingredient.trim();
             if (!ingredient.isEmpty()) {
+                // Encode ingredient for URL
                 String encodedIngredient = URLEncoder.encode(ingredient, "UTF-8");
+                // Construct API URL with encoded ingredient
                 String apiURL = "https://www.thecocktaildb.com/api/json/v1/1/filter.php?i=" + encodedIngredient;
+                // Open connection to API URL
                 URL url = new URL(apiURL);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
@@ -54,6 +66,7 @@ public class IngredientDetailsServlet extends HttpServlet {
 
                 int responseCode = conn.getResponseCode();
                 if (responseCode == 200) {
+                    // If response is successful, read data and format drinks
                     InputStream in = conn.getInputStream();
                     Scanner scanner = new Scanner(in);
                     scanner.useDelimiter("\\A");
@@ -67,6 +80,7 @@ public class IngredientDetailsServlet extends HttpServlet {
                     scanner.close();
                     in.close();
                 } else {
+                    // If response code is not successful, send error response
                     sendErrorResponse(response, "Failed to fetch data for ingredient: " + ingredient);
                     return;
                 }
@@ -74,9 +88,11 @@ public class IngredientDetailsServlet extends HttpServlet {
             }
         }
 
+        // Prepare response JSON object
         JSONObject result = new JSONObject();
         result.put("drinks", allDrinks);
 
+        // Send response
         response.setContentType("application/json");
         PrintWriter out = response.getWriter();
         out.print(result.toString());
@@ -84,67 +100,19 @@ public class IngredientDetailsServlet extends HttpServlet {
         out.flush();
     }
 
-    // Inside IngredientSearchService servlet
-
-    // private JSONObject getDrinkDetails(String idDrink) throws IOException {
-    //     String apiURL = "https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i=" + idDrink;
-    //     URL url = new URL(apiURL);
-    //     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-    //     conn.setRequestMethod("GET");
-    //     conn.connect();
-
-    //     InputStream in = conn.getInputStream();
-    //     Scanner scanner = new Scanner(in);
-    //     scanner.useDelimiter("\\A");
-    //     String responseData = scanner.hasNext() ? scanner.next() : "";
-    //     scanner.close();
-    //     in.close();
-
-    //     JSONObject drinkDetails = new JSONObject(responseData).getJSONArray("drinks").getJSONObject(0);
-    //     JSONObject detailedDrink = new JSONObject();
-
-    //     detailedDrink.put("idDrink", drinkDetails.getString("idDrink"));
-    //     detailedDrink.put("strDrink", drinkDetails.getString("strDrink"));
-    //     detailedDrink.put("strInstructions", drinkDetails.getString("strInstructions"));
-    //     JSONArray ingredients = new JSONArray();
-
-    //     for (int i = 1; i <= 15; i++) {
-    //         String ingredient = drinkDetails.optString("strIngredient" + i);
-    //         if (ingredient != null && !ingredient.isEmpty()) {
-    //             JSONObject ingDetail = new JSONObject();
-    //             ingDetail.put("strIngredient" + i, ingredient);
-    //             ingDetail.put("strMeasure" + i, drinkDetails.optString("strMeasure" + i, ""));
-    //             ingredients.put(ingDetail);
-    //         }
-    //     }
-
-    //     detailedDrink.put("ingredients", ingredients);
-    //     conn.disconnect();
-    //     return detailedDrink;
-    // }
-
-    // private JSONArray formatDrinksResponse(String rawData) throws IOException {
-    //     JSONArray formattedDrinks = new JSONArray();
-    //     JSONObject rawResponse = new JSONObject(rawData);
-    //     JSONArray rawDrinks = rawResponse.optJSONArray("drinks");
-
-    //     if (rawDrinks != null) {
-    //         for (int i = 0; i < rawDrinks.length(); i++) {
-    //             JSONObject rawDrink = rawDrinks.getJSONObject(i);
-    //             String idDrink = rawDrink.getString("idDrink");
-    //             JSONObject drinkDetails = getDrinkDetails(idDrink);
-    //             formattedDrinks.put(drinkDetails);
-    //         }
-    //     }
-    //     return formattedDrinks;
-    // }
-
+    /**
+     * Formats drinks response from raw JSON data.
+     *
+     * @param rawData Raw JSON data received from API.
+     * @return Formatted JSONArray containing drink details.
+     */
     private JSONArray formatDrinksResponse(String rawData) {
         JSONArray formattedDrinks = new JSONArray();
         JSONObject rawResponse = new JSONObject(rawData);
         JSONArray rawDrinks = rawResponse.optJSONArray("drinks");
-    
+
         if (rawDrinks != null) {
+            // If raw drinks array is not null, iterate through each drink and format it
             for (int i = 0; i < rawDrinks.length(); i++) {
                 JSONObject rawDrink = rawDrinks.getJSONObject(i);
                 JSONObject formattedDrink = new JSONObject();
@@ -156,29 +124,14 @@ public class IngredientDetailsServlet extends HttpServlet {
         }
         return formattedDrinks;
     }
-    
 
-    // private JSONArray formatDrinksResponse(String rawData) {
-    // JSONArray formattedDrinks = new JSONArray();
-    // JSONObject rawResponse = new JSONObject(rawData);
-    // JSONArray rawDrinks = rawResponse.optJSONArray("drinks");
-
-    // if (rawDrinks != null) {
-    // for (int i = 0; i < rawDrinks.length(); i++) {
-    // JSONObject rawDrink = rawDrinks.getJSONObject(i);
-    // JSONObject formattedDrink = new JSONObject();
-
-    // formattedDrink.put("idDrink", rawDrink.optString("idDrink"));
-    // formattedDrink.put("strDrink", rawDrink.optString("strDrink"));
-    // formattedDrink.put("strDrinkThumb", rawDrink.optString("strDrinkThumb"));
-    // // Add other fields as needed...
-
-    // formattedDrinks.put(formattedDrink);
-    // }
-    // }
-    // return formattedDrinks;
-    // }
-
+    /**
+     * Sends error response with specified error message.
+     *
+     * @param response     HttpServletResponse object for sending response.
+     * @param errorMessage Error message to be sent in the response.
+     * @throws IOException
+     */
     private void sendErrorResponse(HttpServletResponse response, String errorMessage) throws IOException {
         response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
