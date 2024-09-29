@@ -67,6 +67,7 @@ src/
 │── pom.xml
 │── Dockerfile
 │── .gitignore
+│── LICENSE
 ```
 
 ## Endpoints
