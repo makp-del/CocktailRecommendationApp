@@ -92,7 +92,6 @@ public class GetMyFavouriteDrinkServlet extends HttpServlet {
      *
      * @param idDrink The ID of the drink to retrieve details for.
      * @return JSONObject containing drink details.
-     * @throws IOException
      */
     private JSONObject getDrinkDetails(String idDrink) throws IOException {
         // Construct URL for third-party API with drink ID
@@ -108,7 +107,7 @@ public class GetMyFavouriteDrinkServlet extends HttpServlet {
 
                 // Parse JSON response to JSONObject
                 JSONObject response = new JSONObject(responseData);
-                if (response.getJSONArray("drinks").length() > 0) {
+                if (!response.getJSONArray("drinks").isEmpty()) {
                     // Extract and return only the first drink object from the drinks array
                     scanner.close();
                     return response.getJSONArray("drinks").getJSONObject(0);

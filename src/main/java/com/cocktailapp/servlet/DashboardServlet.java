@@ -1,5 +1,6 @@
 package com.cocktailapp.servlet;
 
+import com.cocktailapp.util.LoggerUtil;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoCollection;
@@ -25,7 +26,7 @@ import org.slf4j.LoggerFactory;
 public class DashboardServlet extends HttpServlet {
     
     // Logger for logging dashboard related information
-    private static final Logger logger = LoggerFactory.getLogger(DashboardServlet.class);
+    private static final Logger logger = LoggerUtil.getLogger(DashboardServlet.class);
     
     // MongoDB connection string and database/collection names
     private static final String MONGO_CONNECTION_STRING = "<YOUR_MONGO_CONNECTION_STRING>";

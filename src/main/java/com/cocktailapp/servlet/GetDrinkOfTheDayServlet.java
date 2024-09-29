@@ -1,5 +1,6 @@
 package com.cocktailapp.servlet;
 
+import com.cocktailapp.util.LoggerUtil;
 import com.cocktailapp.util.ServiceLogger;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoClient;
@@ -11,6 +12,8 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -31,11 +34,13 @@ import java.util.Scanner;
 @WebServlet("/getDrinkOfTheDay")
 public class GetDrinkOfTheDayServlet extends HttpServlet {
 
+    private static final Logger logger = LoggerUtil.getLogger(GetDrinkOfTheDayServlet.class);
+
     // MongoDB connection string and database/collection names
     private static final String MONGO_CONNECTION_STRING = "<YOUR_MONGO_CONNECTION_STRING>";
     private static final String DB_NAME = "CocktailDB"; // Use the name of your database
     private static final String COLLECTION_NAME = "UserDrinkRequests"; // Use the name of your collection
-    private static final ServiceLogger logger = new ServiceLogger(MONGO_CONNECTION_STRING, DB_NAME, COLLECTION_NAME);
+    private static final ServiceLogger serviceLogger = new ServiceLogger(MONGO_CONNECTION_STRING, DB_NAME, COLLECTION_NAME);
 
     /**
      * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
@@ -58,10 +63,12 @@ public class GetDrinkOfTheDayServlet extends HttpServlet {
             response.setContentType("application/json");
             PrintWriter out = response.getWriter();
             out.print(drinkDetails.toString());
-            logger.log(this.getClass().getSimpleName(), request.getHeader("User-Agent"), "/getDrinkOfTheDay", "", 0, "success");
+            logger.info("Drink of the day retrieved successfully.");
+            serviceLogger.log(this.getClass().getSimpleName(), request.getHeader("User-Agent"), "/getDrinkOfTheDay", "", 0, "success");
             out.flush();
         } else {
-            logger.log(this.getClass().getSimpleName(), request.getHeader("User-Agent"), "/getDrinkOfTheDay", "", 0, "error: No drink of the day found.");
+            logger.error("No drink of the day found.");
+            serviceLogger.log(this.getClass().getSimpleName(), request.getHeader("User-Agent"), "/getDrinkOfTheDay", "", 0, "error: No drink of the day found.");
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "No drink of the day found.");
         }
     }
@@ -84,12 +91,14 @@ public class GetDrinkOfTheDayServlet extends HttpServlet {
             Scanner scanner = new Scanner(conn.getInputStream()).useDelimiter("\\A")) {
                 String responseData = scanner.hasNext() ? scanner.next() : "";
                 scanner.close();
-                logger.log(this.getClass().getSimpleName(), "", apiURL, "", 0, "success");
+                logger.info("Drink details retrieved successfully.");
+                serviceLogger.log(this.getClass().getSimpleName(), "", apiURL, "", 0, "success");
                 // Parse JSON response to JSONObject
                 return new JSONObject(responseData);
             } catch (JSONException e) {
                 // If JSON parsing fails, handle appropriately
-                logger.log(this.getClass().getSimpleName(), "", apiURL, "", 0, "error: Failed to parse drink details from external API.");
+                logger.error("Failed to parse drink details from external API.");
+                serviceLogger.log(this.getClass().getSimpleName(), "", apiURL, "", 0, "error: Failed to parse drink details from external API.");
                 return new JSONObject().put("error", "Failed to parse drink details from external API.");
             }
         } else {

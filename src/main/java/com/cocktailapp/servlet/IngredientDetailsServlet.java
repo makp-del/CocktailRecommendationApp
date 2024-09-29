@@ -6,9 +6,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.ServletException;
 
+import com.cocktailapp.util.LoggerUtil;
 import com.cocktailapp.util.ServiceLogger;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -24,11 +27,13 @@ import java.util.Scanner;
 @WebServlet("/findByIngredients")
 public class IngredientDetailsServlet extends HttpServlet {
 
-    // MongoDB connection string and database/collection names
+    private static final Logger logger = LoggerUtil.getLogger(IngredientDetailsServlet.class);
+
+    // MongoDB's connection string and database/collection names
     private static final String MONGO_CONNECTION_STRING = "<YOUR_MONGO_CONNECTION_STRING>";
     private static final String DB_NAME = "CocktailDB"; // Use the name of your database
     private static final String COLLECTION_NAME = "ServiceLogs"; // Use the name of your collection
-    private static final ServiceLogger logger = new ServiceLogger(MONGO_CONNECTION_STRING, DB_NAME, COLLECTION_NAME);
+    private static final ServiceLogger serviceLogger = new ServiceLogger(MONGO_CONNECTION_STRING, DB_NAME, COLLECTION_NAME);
 
     /**
      * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
@@ -40,7 +45,8 @@ public class IngredientDetailsServlet extends HttpServlet {
         String ingredients = request.getParameter("ingredients");
         if (ingredients == null || ingredients.trim().isEmpty()) {
             status = "error: Search term is required";
-            logger.log(this.getClass().getSimpleName(), request.getHeader("User-Agent"), "/findByIngredients", "searchTerm=none", System.currentTimeMillis() - startTime, status);
+            logger.error("Ingredients parameter is required");
+            serviceLogger.log(this.getClass().getSimpleName(), request.getHeader("User-Agent"), "/findByIngredients", "searchTerm=none", System.currentTimeMillis() - startTime, status);
             sendErrorResponse(response, "Ingredients parameter is required.");
             return;
         }
@@ -99,8 +105,9 @@ public class IngredientDetailsServlet extends HttpServlet {
         // Send response
         response.setContentType("application/json");
         PrintWriter out = response.getWriter();
-        out.print(result.toString());
-        logger.log(this.getClass().getSimpleName(), request.getHeader("User-Agent"), "/findByIngredients", "searchTerm=" + sBuilder.toString(), System.currentTimeMillis() - startTime, status);
+        out.print(result);
+        logger.info("Ingredients: " + sBuilder);
+        serviceLogger.log(this.getClass().getSimpleName(), request.getHeader("User-Agent"), "/findByIngredients", "searchTerm=" + sBuilder.toString(), System.currentTimeMillis() - startTime, status);
         out.flush();
     }
 
@@ -134,7 +141,6 @@ public class IngredientDetailsServlet extends HttpServlet {
      *
      * @param response     HttpServletResponse object for sending response.
      * @param errorMessage Error message to be sent in the response.
-     * @throws IOException
      */
     private void sendErrorResponse(HttpServletResponse response, String errorMessage) throws IOException {
         response.setContentType("application/json");

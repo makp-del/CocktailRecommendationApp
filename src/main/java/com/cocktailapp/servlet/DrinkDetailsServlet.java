@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.ServletException;
 
+import com.cocktailapp.util.LoggerUtil;
 import com.cocktailapp.util.ServiceLogger;
 import org.json.JSONObject;
 import java.io.IOException;
@@ -20,6 +21,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import org.slf4j.Logger;
 
 /**
  * Servlet implementation class com.cocktailapp.servlet.DrinkDetailsServlet
@@ -28,11 +30,13 @@ import com.mongodb.client.model.Filters;
 @WebServlet("/getDrinkDetails")
 public class DrinkDetailsServlet extends HttpServlet {
 
+    private static final Logger logger = LoggerUtil.getLogger(DrinkDetailsServlet.class);
+
     // MongoDB connection string and database/collection names
     private static final String MONGO_CONNECTION_STRING = "<YOUR_MONGO_CONNECTION_STRING>";
     private static final String DB_NAME = "CocktailDB"; // Use the name of your database
     private static final String COLLECTION_NAME = "ServiceLogs"; // Use the name of your collection
-    private static final ServiceLogger logger = new ServiceLogger(MONGO_CONNECTION_STRING, DB_NAME, COLLECTION_NAME);
+    private static final ServiceLogger serviceLogger = new ServiceLogger(MONGO_CONNECTION_STRING, DB_NAME, COLLECTION_NAME);
 
     /**
      * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
@@ -64,7 +68,8 @@ public class DrinkDetailsServlet extends HttpServlet {
         incrementUserDrinkRequestCount(sessionToken, idDrink);
 
         // Log the request details
-        logger.log(this.getClass().getSimpleName(), request.getHeader("User-Agent"), "/getDrinkDetails", "idDrink=" + idDrink, System.currentTimeMillis() - startTime, status);
+        logger.info("Drink details retrieved successfully");
+        serviceLogger.log(this.getClass().getSimpleName(), request.getHeader("User-Agent"), "/getDrinkDetails", "idDrink=" + idDrink, System.currentTimeMillis() - startTime, status);
     }
 
     /**

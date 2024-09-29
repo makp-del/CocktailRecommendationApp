@@ -1,5 +1,6 @@
 package com.cocktailapp.servlet;
 
+import com.cocktailapp.util.LoggerUtil;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -12,6 +13,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import com.cocktailapp.util.ServiceLogger;
+import org.slf4j.Logger;
 
 
 /**
@@ -21,11 +24,12 @@ import java.io.IOException;
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
 
-    // MongoDB connection string and database/collection names
+    private static final Logger logger = LoggerUtil.getLogger(LoginServlet.class);
+    // MongoDB's connection string and database/collection names
     private static final String MONGO_CONNECTION_STRING = "<YOUR_MONGO_CONNECTION_STRING>";
     private static final String DB_NAME = "CocktailDB"; // Use the name of your database
     private static final String COLLECTION_NAME = "Users"; // Use the name of your collection
-    private static ServiceLogger logger = new ServiceLogger(MONGO_CONNECTION_STRING, DB_NAME, COLLECTION_NAME);
+    private static ServiceLogger serviceLogger = new ServiceLogger(MONGO_CONNECTION_STRING, DB_NAME, COLLECTION_NAME);
     private MongoCollection<Document> collection;
 
     /**
@@ -47,7 +51,8 @@ public class LoginServlet extends HttpServlet {
 
         // Basic validation
         if (username == null || password == null || username.isEmpty() || password.isEmpty()) {
-            logger.log(this.getClass().getSimpleName(), request.getHeader("User-Agent"), "/login", "username=" + username, 0, "error: Username and password are required");
+            logger.error("Username and password are required.");
+            serviceLogger.log(this.getClass().getSimpleName(), request.getHeader("User-Agent"), "/login", "username=" + username, 0, "error: Username and password are required");
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Username and password are required.");
             return;
         }
@@ -60,11 +65,13 @@ public class LoginServlet extends HttpServlet {
             if (existingUser == null) {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 response.getWriter().write("User not present");
-                logger.log(this.getClass().getSimpleName(), request.getHeader("User-Agent"), "/login", "username=" + username, 0, "error: User not found");
+                logger.error("User not found");
+                serviceLogger.log(this.getClass().getSimpleName(), request.getHeader("User-Agent"), "/login", "username=" + username, 0, "error: User not found");
             } else {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write("Failure");
-                logger.log(this.getClass().getSimpleName(), request.getHeader("User-Agent"), "/login", "username=" + username, 0, "error: Unauthorized");
+                logger.error("Unauthorized");
+                serviceLogger.log(this.getClass().getSimpleName(), request.getHeader("User-Agent"), "/login", "username=" + username, 0, "error: Unauthorized");
             }
             return;
         }
@@ -73,6 +80,7 @@ public class LoginServlet extends HttpServlet {
         String sessionToken = user.getString("sessionToken");
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter().write("Success; SessionToken: " + sessionToken);
-        logger.log(this.getClass().getSimpleName(), request.getHeader("User-Agent"), "/login", "username=" + username, 0, "success");
+        logger.info("User logged in successfully");
+        serviceLogger.log(this.getClass().getSimpleName(), request.getHeader("User-Agent"), "/login", "username=" + username, 0, "success");
     }
 }
