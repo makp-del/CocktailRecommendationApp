@@ -1,7 +1,3 @@
-Here’s an updated, more detailed `README.md` based on the classes you shared, including information about authentication, the “Drink of the Day” feature, and other functionalities.
-
----
-
 # CocktailApp
 
 CocktailApp is a Java-based web application that allows users to search for cocktails by name or ingredients, retrieve detailed information about specific drinks, view logs and user data, and manage user authentication. The application also includes a “Drink of the Day” feature and keeps track of favorite drinks for each user.
