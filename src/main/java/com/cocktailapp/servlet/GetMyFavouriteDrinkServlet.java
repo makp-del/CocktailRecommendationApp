@@ -1,16 +1,15 @@
+package com.cocktailapp.servlet;
+
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Sorts;
 import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.json.JSONObject;
 import java.util.List;
 import java.util.ArrayList;
 import org.json.JSONArray;
+import org.json.JSONException;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -25,14 +24,14 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 /**
- * Servlet implementation class GetMyFavouriteDrinkServlet
+ * Servlet implementation class com.cocktailapp.servlet.GetMyFavouriteDrinkServlet
  * This servlet is responsible for retrieving the favorite drinks of a user.
  */
 @WebServlet("/getMyFavouriteDrink")
 public class GetMyFavouriteDrinkServlet extends HttpServlet {
 
     private MongoCollection<Document> collection;
-    private static final String MONGO_CONNECTION_STRING = "mongodb+srv://manjunathkp1298:2Xg3NY1C5rBlnbHa@dismprojectcluster.6ct1xxu.mongodb.net/?retryWrites=true&w=majority&appName=DISMProjectCluster";
+    private static final String MONGO_CONNECTION_STRING = "<YOUR_MONGO_CONNECTION_STRING>";
     private static final String DB_NAME = "CocktailDB"; // Use the name of your database
     private static final String COLLECTION_NAME = "UserDrinkRequests"; // Use the name of your collection
 
@@ -40,8 +39,7 @@ public class GetMyFavouriteDrinkServlet extends HttpServlet {
     public void init() throws ServletException {
         super.init();
         // Initialize MongoDB collection
-        String mongoConnectionString = MONGO_CONNECTION_STRING;
-        MongoClient mongoClient = MongoClients.create(mongoConnectionString);
+        MongoClient mongoClient = MongoClients.create(MONGO_CONNECTION_STRING);
         MongoDatabase database = mongoClient.getDatabase(DB_NAME);
         this.collection = database.getCollection(COLLECTION_NAME);
     }
@@ -103,18 +101,25 @@ public class GetMyFavouriteDrinkServlet extends HttpServlet {
         conn.setRequestMethod("GET");
 
         if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
-            // If response code indicates success, parse JSON response from API
-            Scanner scanner = new Scanner(conn.getInputStream()).useDelimiter("\\A");
-            String responseData = scanner.hasNext() ? scanner.next() : "";
-            scanner.close();
+            try (// If response code indicates success, parse JSON response from API
+            Scanner scanner = new Scanner(conn.getInputStream()).useDelimiter("\\A")) {
+                String responseData = scanner.hasNext() ? scanner.next() : "";
+                scanner.close();
 
-            // Parse JSON response to JSONObject
-            JSONObject response = new JSONObject(responseData);
-            if (response.getJSONArray("drinks").length() > 0) {
-                // Extract and return only the first drink object from the drinks array
-                return response.getJSONArray("drinks").getJSONObject(0);
-            } else {
-                return new JSONObject().put("error", "No drinks found.");
+                // Parse JSON response to JSONObject
+                JSONObject response = new JSONObject(responseData);
+                if (response.getJSONArray("drinks").length() > 0) {
+                    // Extract and return only the first drink object from the drinks array
+                    scanner.close();
+                    return response.getJSONArray("drinks").getJSONObject(0);
+                } else {
+                    // If no drinks found, return an error message
+                    scanner.close();
+                    return new JSONObject().put("error", "No drinks found.");
+                }
+            } catch (JSONException e) {
+                // If an exception occurs during JSON parsing, return an error message
+                return new JSONObject().put("error", "Failed to parse drink details.");
             }
         } else {
             // If response code indicates failure, handle appropriately

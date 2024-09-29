@@ -1,3 +1,5 @@
+package com.cocktailapp.servlet;
+
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoCollection;
@@ -16,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Servlet implementation class DashboardServlet
+ * Servlet implementation class com.cocktailapp.servlet.DashboardServlet
  * This servlet is responsible for retrieving and displaying dashboard data.
  */
 @WebServlet("/dashboard")
@@ -26,7 +28,7 @@ public class DashboardServlet extends HttpServlet {
     private static final Logger logger = LoggerFactory.getLogger(DashboardServlet.class);
     
     // MongoDB connection string and database/collection names
-    private static final String MONGO_CONNECTION_STRING = "mongodb+srv://manjunathkp1298:2Xg3NY1C5rBlnbHa@dismprojectcluster.6ct1xxu.mongodb.net/?retryWrites=true&w=majority&appName=DISMProjectCluster";
+    private static final String MONGO_CONNECTION_STRING = "<YOUR_MONGO_CONNECTION_STRING>";
     private static final String DB_NAME = "CocktailDB"; // Use the name of your database
     private static final String COLLECTION_NAME = "ServiceLogs"; // Use the name of your collection
     private static final String USERS_COLLECTION_NAME = "Users";

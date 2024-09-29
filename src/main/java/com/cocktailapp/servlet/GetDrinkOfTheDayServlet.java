@@ -1,12 +1,15 @@
+package com.cocktailapp.servlet;
+
+import com.cocktailapp.util.ServiceLogger;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.servlet.ServletException;
@@ -22,17 +25,17 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 /**
- * Servlet implementation class GetDrinkOfTheDayServlet
+ * Servlet implementation class com.cocktailapp.servlet.GetDrinkOfTheDayServlet
  * This servlet is responsible for retrieving the drink of the day.
  */
 @WebServlet("/getDrinkOfTheDay")
 public class GetDrinkOfTheDayServlet extends HttpServlet {
 
     // MongoDB connection string and database/collection names
-    private static final String MONGO_CONNECTION_STRING = "mongodb+srv://manjunathkp1298:2Xg3NY1C5rBlnbHa@dismprojectcluster.6ct1xxu.mongodb.net/?retryWrites=true&w=majority&appName=DISMProjectCluster";
+    private static final String MONGO_CONNECTION_STRING = "<YOUR_MONGO_CONNECTION_STRING>";
     private static final String DB_NAME = "CocktailDB"; // Use the name of your database
     private static final String COLLECTION_NAME = "UserDrinkRequests"; // Use the name of your collection
-    private static ServiceLogger logger = new ServiceLogger(MONGO_CONNECTION_STRING, DB_NAME, COLLECTION_NAME);
+    private static final ServiceLogger logger = new ServiceLogger(MONGO_CONNECTION_STRING, DB_NAME, COLLECTION_NAME);
 
     /**
      * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
@@ -55,8 +58,10 @@ public class GetDrinkOfTheDayServlet extends HttpServlet {
             response.setContentType("application/json");
             PrintWriter out = response.getWriter();
             out.print(drinkDetails.toString());
+            logger.log(this.getClass().getSimpleName(), request.getHeader("User-Agent"), "/getDrinkOfTheDay", "", 0, "success");
             out.flush();
         } else {
+            logger.log(this.getClass().getSimpleName(), request.getHeader("User-Agent"), "/getDrinkOfTheDay", "", 0, "error: No drink of the day found.");
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "No drink of the day found.");
         }
     }
@@ -75,13 +80,18 @@ public class GetDrinkOfTheDayServlet extends HttpServlet {
         conn.setRequestMethod("GET");
 
         if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
-            // If response code indicates success, parse JSON response from API
-            Scanner scanner = new Scanner(conn.getInputStream()).useDelimiter("\\A");
-            String responseData = scanner.hasNext() ? scanner.next() : "";
-            scanner.close();
-
-            // Parse JSON response to JSONObject
-            return new JSONObject(responseData);
+            try (// If response code indicates success, parse JSON response from API
+            Scanner scanner = new Scanner(conn.getInputStream()).useDelimiter("\\A")) {
+                String responseData = scanner.hasNext() ? scanner.next() : "";
+                scanner.close();
+                logger.log(this.getClass().getSimpleName(), "", apiURL, "", 0, "success");
+                // Parse JSON response to JSONObject
+                return new JSONObject(responseData);
+            } catch (JSONException e) {
+                // If JSON parsing fails, handle appropriately
+                logger.log(this.getClass().getSimpleName(), "", apiURL, "", 0, "error: Failed to parse drink details from external API.");
+                return new JSONObject().put("error", "Failed to parse drink details from external API.");
+            }
         } else {
             // If response code indicates failure, handle appropriately
             return new JSONObject().put("error", "Failed to fetch drink details from external API.");

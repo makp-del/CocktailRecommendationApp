@@ -1,11 +1,12 @@
+package com.cocktailapp.servlet;
+
+import com.cocktailapp.util.ServiceLogger;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -22,7 +23,7 @@ public class SignUpServlet extends HttpServlet {
     private MongoCollection<Document> collection;
     
     // MongoDB connection string
-    private static final String MONGO_CONNECTION_STRING = "mongodb+srv://manjunathkp1298:2Xg3NY1C5rBlnbHa@dismprojectcluster.6ct1xxu.mongodb.net/?retryWrites=true&w=majority&appName=DISMProjectCluster";
+    private static final String MONGO_CONNECTION_STRING = "<YOUR_MONGO_CONNECTION_STRING>";
     
     // Database name
     private static final String DB_NAME = "CocktailDB";
@@ -31,7 +32,7 @@ public class SignUpServlet extends HttpServlet {
     private static final String COLLECTION_NAME = "Users";
     
     // Service logger instance
-    private static ServiceLogger logger = new ServiceLogger(MONGO_CONNECTION_STRING, DB_NAME, COLLECTION_NAME);
+    private static final ServiceLogger logger = new ServiceLogger(MONGO_CONNECTION_STRING, DB_NAME, COLLECTION_NAME);
 
     /**
      * Initialize the servlet.
@@ -54,6 +55,7 @@ public class SignUpServlet extends HttpServlet {
         // Basic validation
         if (username == null || password == null || username.isEmpty() || password.isEmpty()) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Username and password are required.");
+            logger.log(this.getClass().getSimpleName(), request.getHeader("User-Agent"), "/signup", "username=" + username, 0, "error: Username and password are required");
             return;
         }
 
@@ -62,6 +64,7 @@ public class SignUpServlet extends HttpServlet {
         if (existingUser != null) {
             response.setStatus(HttpServletResponse.SC_CONFLICT);
             response.getWriter().write("User already exists");
+            logger.log(this.getClass().getSimpleName(), request.getHeader("User-Agent"), "/signup", "username=" + username, 0, "error: User already exists");
             return;
         }
 
@@ -76,6 +79,7 @@ public class SignUpServlet extends HttpServlet {
 
         // Send success response with session token
         response.setStatus(HttpServletResponse.SC_OK);
+        logger.log(this.getClass().getSimpleName(), request.getHeader("User-Agent"), "/signup", "username=" + username, 0, "success");
         response.getWriter().write("Success; SessionToken: " + sessionToken);
     }
 }

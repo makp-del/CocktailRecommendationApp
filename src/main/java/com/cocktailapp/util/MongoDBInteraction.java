@@ -1,3 +1,5 @@
+package com.cocktailapp.util;
+
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
@@ -6,23 +8,22 @@ import org.bson.Document;
 
 import java.util.Scanner;
 
-import static com.mongodb.client.model.Filters.*;
-
 public class MongoDBInteraction {
     public static void main(String[] args) {
-        String connectionString = "mongodb+srv://manjunathkp1298:2Xg3NY1C5rBlnbHa@dismprojectcluster.6ct1xxu.mongodb.net/?retryWrites=true&w=majority&appName=DISMProjectCluster";
+        String connectionString = "<YOUR_MONGO_CONNECTION_STRING>";
         try (MongoClient mongoClient = MongoClients.create(connectionString)) {
             MongoDatabase database = mongoClient.getDatabase("SimpleDB");
             MongoCollection<Document> collection = database.getCollection("YourCollectionName");
 
-            // Prompt the user for a string
-            Scanner scanner = new Scanner(System.in);
-            System.out.println("Enter a string to store in the database:");
-            String userInput = scanner.nextLine();
+            try (// Prompt the user for a string
+            Scanner scanner = new Scanner(System.in)) {
+                System.out.println("Enter a string to store in the database:");
+                String userInput = scanner.nextLine();
 
-            // Write the string to the MongoDB database
-            Document doc = new Document("userInput", userInput);
-            collection.insertOne(doc);
+                // Write the string to the MongoDB database
+                Document doc = new Document("userInput", userInput);
+                collection.insertOne(doc);
+            }
             System.out.println("Document inserted.");
 
             // Read all documents from the database

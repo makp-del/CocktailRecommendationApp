@@ -1,3 +1,5 @@
+package com.cocktailapp.util;
+
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoCollection;
@@ -10,10 +12,10 @@ import java.util.Date;
 public class ServiceLogger {
     
     // MongoDB collection to store service logs
-    private MongoCollection<Document> collection;
+    private final MongoCollection<Document> collection;
 
     /**
-     * Constructor to initialize the ServiceLogger.
+     * Constructor to initialize the com.cocktailapp.util.ServiceLogger.
      * @param connectionString MongoDB connection string
      * @param dbName           Name of the database
      * @param collectionName   Name of the collection
